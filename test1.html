@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>letterfly_test1</title>
+	<script
+  src="http://code.jquery.com/jquery-3.3.1.js"
+  integrity="sha256-2Kok7MbOyxpgUVvAk/HJ2jigOSYS2auK4Pfzbm7uH60="
+  crossorigin="anonymous"></script>
+</head>
+<body>
+	<div>안녕하세요 <b><i><u>레 터 플 라 이</u></i></b> 입니다.</div>
+	<button onclick="changeColor()"></button>
+</body>
+</html>
+
+<script>
+	
+	//get text value 
+	const text = $("body>div").html();
+
+
+	let index = 0;
+	let textChanged = "";
+	
+	//change color of individual text value
+	const changeColor = () => {
+		console.log(index);
+
+		if(index === text.length ){
+			return $("body>div").html(textChanged);
+		}		
+
+		if(text[index] != " " && text[index]!="<"){
+			textChanged += text[index].fontcolor(selectColorRandomly())
+			index++;
+			return changeColor();
+		}else if(text[index] == " "){
+			textChanged += " ";
+			index++;
+			return changeColor();
+		}else if(text[index] == "<"){
+			textChanged += text[index];
+			index++;
+			return increaseIdx();
+		}
+	}
+	
+	//just increase index only to preserve html tags.
+	const increaseIdx = () => {
+		if(text[index] == ">"){
+			textChanged += text[index];
+			index++;
+			return changeColor();
+		}else{
+			textChanged += text[index];
+			index++;
+			return increaseIdx();	
+		}
+		
+		
+	}
+	
+	//choice random hex color
+	const selectColorRandomly = () => '#'+Math.floor(Math.random()*16777215).toString(16);
+
+
+</script>

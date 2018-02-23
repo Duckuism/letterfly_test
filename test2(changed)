@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>letterfly_test2</title>
+	<!-- jquery cdn -->
+	<script
+    src="http://code.jquery.com/jquery-3.3.1.js"
+    integrity="sha256-2Kok7MbOyxpgUVvAk/HJ2jigOSYS2auK4Pfzbm7uH60="
+    crossorigin="anonymous"></script>
+
+    <!-- bootstrap4 cdn -->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
+	<script src="https://code.jquery.com/jquery-3.1.1.slim.min.js" integrity="sha384-A7FZj7v+d/sdmMqp/nOQwliLvUsJfDHW+k9Omg/a/EheAdgtzNs3hpfag6Ed950n" crossorigin="anonymous"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script>
+	<!-- handlebars cdn -->
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.0.11/handlebars.js"></script>
+	
+	<!-- handlebars template -->
+	<script id="newTextarea" type="text/x-handlebars-template">
+
+			<textarea name="" id="text{{index}}" cols="30" rows="5" style="overflow:hidden"></textarea>
+			
+	</script>
+
+	<style>
+		textarea{
+			display:block;
+			margin-top:10px;
+			margin-bottom:10px;
+		}
+	</style>
+
+
+</head>
+<body>
+	<div class="container">
+		<div class="row align-contents-center">
+			<div class="col-12">
+				<textarea name="" id="text0" cols="30" rows="5" style="overflow:hidden"></textarea>
+			</div>
+		</div>
+	</div>
+
+</body>
+</html>
+
+<script>
+
+	//일단 키가 눌리면 당시 입력 커서가 위치하고 있는 객체의 내용 높이와 박스 높이를 계산한 후, 내용 높이가 박스 높이를 초과하면 마지막으로 입력되어 열이 바뀐 글자를 저장한 후 제거한다. 그리고 핸들바로 새로운 textarea를 추가한 다음 저장했던 맨 마지막 글자를 새로 생긴 textarea에 갖다 붙이고 인풋 커서를 붙인 글자 뒤에 위치하게 한다. 만약 textarea에 아무 내용도 존재하지 않으면 이전 textarea로 인풋 커서를 이동시키고 비어 있는 textarea는 제거한다.
+
+	//이슈1. 함수가 실행되기 전에 추가로 텍스트를 입력하면 textarea가 두 개 생김
+	//이슈2. 문단을 복사 붙여넣기 하는 경우 문단 마지막 글자만 넘어 감
+
+	//append textarea to html using handlebars
+	var source = document.getElementById("newTextarea").innerHTML;
+	var template = Handlebars.compile(source);
+	var context = {"index":0}
+	var html = template(context);
+	
+	//define height of content and height of div content
+	var contentHeight; //실제 내용 텍스트의 높이
+	var divHeight; //클라이언트에게 보이는 텍스트 박스의 높이
+	var nowText;
+	var lastChar;
+	var cuttedChar;
+
+	var storedLastChar = "";
+
+	function cutLastChar(element){
+		
+		contentHeight = document.getElementById(element.attr('id')).scrollHeight;
+		divHeight = document.getElementById(element.attr('id')).clientHeight;	
+		nowText = element.val();		
+
+		var newElement = element;
+
+		if(divHeight<contentHeight){					
+
+			nowCuttedChar = element.val().slice(nowText.length-1);
+
+			storedLastChar = nowCuttedChar + storedLastChar;
+
+			newElement.val(element.val().slice(0,nowText.length-1));
+			
+			return cutLastChar(newElement);
+		}
+
+		if(divHeight>=contentHeight){
+			return storedLastChar;
+		}
+
+	}
+
+
+	//동적으로 생성된 함수는 이벤트를 다시 바인딩해줘야한다.
+	$(document).on("keyup","textarea",function(){
+
+			contentHeight = document.getElementById($(this).attr('id')).scrollHeight;
+			divHeight = document.getElementById($(this).attr('id')).clientHeight;		
+
+			if(divHeight<contentHeight){
+
+				cuttedChar = cutLastChar($(this));
+
+				context.index++;
+				html = template(context);
+				$("body>div>div>div").append(html);	
+				$(this).next().val(cuttedChar).focus();
+
+			}	
+		
+			if($(this).val() == ""){
+				context.index--;
+				$(this).prev().focus();
+				$(this).remove();			
+			}		
+			
+	})
+
+
+
+</script>
